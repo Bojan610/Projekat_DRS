@@ -1,6 +1,18 @@
 from marshmallow import Schema, fields
+from config import db
 
-class User():
+class users(db.Model):
+    firstName = db.Column(db.String(100))
+    lasttName = db.Column(db.String(100))
+    email = db.Column("email", db.String(100), primary_key=True)
+    password = db.Column(db.String(100))
+    address = db.Column(db.String(100))
+    city = db.Column(db.String(100))
+    country = db.Column(db.String(100))
+    telephone = db.Column(db.String(100))
+    amount = db.Column(db.Integer)
+    verified = db.Column(db.Boolean)
+
     def __init__(self, firstName, lasttName, email, password, address, city, country, tel):
         self.firstName = firstName
         self.lasttName = lasttName

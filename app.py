@@ -1,12 +1,17 @@
 from os import error
 from typing import Counter
-from flask import Flask, render_template, request, json,  redirect, url_for
+from flask import Flask, render_template, request, json,  redirect, url_for, session
 
-app = Flask(__name__)
+from Model.users import users
+from config import db, app
+
 
 @app.route('/')
 def main():
-    return render_template('index.html')
+     if "user" in session:
+        return redirect(url_for("userHome"))
+     else:
+        return render_template('index.html')
 
 @app.route('/register', methods=['POST', 'GET'])
 def register():
@@ -22,25 +27,101 @@ def register():
             _telephone = request.form["tel"]
 
             if _name and _surname and _email and _password and _address and _city and _country and _telephone:
-                return redirect(url_for("login"))      
+                found_user = users.query.filter_by(email=_email).first()
+                if found_user:
+                    error = "User with this email already exists."
+                    return render_template('register.html', error=error)
+                else:
+                    usr = users(_name, _surname, _email, _password, _address, _city, _country, _telephone)
+                    db.session.add(usr)
+                    db.session.commit()
+                    return redirect(url_for("login"))      
             else:
                  error = "Every field must be filed."
                  return render_template('register.html', error=error)
         except Exception as e:
             return "Error"
     else:
-         return render_template('register.html')
+         if "user" in session:
+            return redirect(url_for("userHome"))
+         else:
+            return render_template('register.html')
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
      if request.method == "POST":
-        if  request.form["emailLogIn"] == "Admin@gmail.com" and request.form["passwordLogIn"] == "Admin":
-            return "<h2>Hello Admin@gmail.com!</h2>"
+        if request.form["emailLogIn"] and request.form["passwordLogIn"]:
+            found_user = users.query.filter_by(email=request.form["emailLogIn"]).first()
+            if found_user != None and request.form["emailLogIn"] == found_user.email and request.form["passwordLogIn"] == found_user.password:
+                session["user"] = found_user.email
+                return redirect(url_for("userHome"))  
+            else:
+                error = "Wrong email address or/and password."
+                return render_template('login.html', error=error)
         else:
             error = "Wrong email address or/and password."
             return render_template('login.html', error=error)
      else:
-        return render_template('login.html')
+        if "user" in session:
+            return redirect(url_for("userHome"))
+        else:
+            return render_template('login.html')
+
+@app.route('/userHome')
+def userHome():
+    if "user" in session:
+        user = session["user"]
+        return render_template('userHome.html', user=user)
+    else:
+         return redirect(url_for("login"))   
+
+@app.route('/logout')
+def logout():
+    session.pop("user", None)
+    return redirect(url_for('main'))   
+
+@app.route('/modifyProfile', methods=['POST', 'GET'])
+def modifyProfile():
+    if request.method == "POST":
+        try:
+            _name = request.form["nameModify"]
+            _surname = request.form["surnameModify"]
+            _password = request.form["passwordModify"]
+            _address = request.form["addressModify"]
+            _city = request.form["cityModify"]
+            _country = request.form["countryModify"]
+            _telephone = request.form["telModify"]
+
+            user = session["user"]
+            found_user = users.query.filter_by(email=user).first()
+            if (_name and _surname and _password and _address and _city and _country and _telephone):               
+                found_user.firsName = _name
+                found_user.lasttName = _surname
+                found_user.password = _password
+                found_user.address = _address
+                found_user.country = _country
+                found_user.city = _city
+                found_user.telephone = _telephone
+                db.session.commit()
+                return redirect(url_for("userHome"))   
+            else:
+                error = "Every field must be filed."
+                return render_template('modifyProfile.html', fn=found_user.firstName, ln=found_user.lasttName, email=found_user.email, password=found_user.password, 
+                    address=found_user.address, country=found_user.country, city=found_user.city, tel=found_user.telephone, amount=found_user.amount, 
+                    verified=found_user.verified, error=error)
+        except Exception as e:
+            return "Error"
+    else:
+        if "user" in session:
+            user = session["user"]
+            found_user = users.query.filter_by(email=user).first()
+            return render_template('modifyProfile.html', fn=found_user.firstName, ln=found_user.lasttName, email=found_user.email, password=found_user.password, 
+                    address=found_user.address, country=found_user.country, city=found_user.city, tel=found_user.telephone, amount=found_user.amount, 
+                    verified=found_user.verified)
+        else:
+            return redirect(url_for("login")) 
+   
 
 if __name__ == "__main__":
+    db.create_all()
     app.run(port=5000)
