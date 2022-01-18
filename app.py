@@ -120,8 +120,42 @@ def modifyProfile():
                     verified=found_user.verified)
         else:
             return redirect(url_for("login")) 
-   
+@app.route('/market')
+def market():
+    if "user" in session:
+        user = session["user"]
+        return render_template('market.html', user=user)
+    else:
+        return redirect(url_for("login"))
+@app.route('/depositWithdraw')
+def depositWithdraw():
+    if "user" in session:
+        user = session["user"]
+        return render_template('depositWithdraw.html', user=user)
+    else:
+        return redirect(url_for("login"))
+@app.route('/status')
+def status():
+    if "user" in session:
+        user = session["user"]
+        return render_template('status.html', user=user)
+    else:
+        return redirect(url_for("login"))
+@app.route('/trade')
+def trade():
+    if "user" in session:
+        user = session["user"]
+        return render_template('trade.html', user=user)
+    else:
+        return redirect(url_for("login"))
+@app.route('/transactions')
+def transactions():
+    if "user" in session:
+        user = session["user"]
+        return render_template('transactions.html', user=user)
+    else:
+        return redirect(url_for("login"))
 
 if __name__ == "__main__":
     db.create_all()
-    app.run(port=5000)
+    app.run(port=5000,debug=True)

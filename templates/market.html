@@ -1,0 +1,10 @@
+{% extends "baseUser.html" %}
+{% block title %}Python Flask WEB App{% endblock %}
+{% block content %}
+
+
+  {% if error %}
+    <p><strong>Error:</strong> {{ error }}
+  {% endif %}
+
+{% endblock %}
