@@ -2,8 +2,19 @@
 {% block title %}Python Flask WEB App{% endblock %}
 {% block content %}
 
+  <div class="form-group col-md-6">
+    <br>
+    <label for="inputEmail4">Enter the amount to Deposit:</label>
+    <input type="text" class="form-control" name="deposit" id="deposit" placeholder="Enter amount from 1 to 10000">
+  </div>
+  <button type="submit" class="btn btn-primary">Deposit</button>
 
-
+  <div class="form-group col-md-6">
+    <br>
+    <label for="inputEmail4">Enetr the amount to Withdraw:</label>
+    <input type="text" class="form-control" name="withdraw" id="withdraw" placeholder="Enter amount from 1 to 10000">
+  </div>
+  <button type="submit" class="btn btn-primary">Withdraw</button>
   {% if error %}
     <p><strong>Error:</strong> {{ error }}
   {% endif %}

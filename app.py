@@ -3,6 +3,7 @@ from typing import Counter
 from flask import Flask, render_template, request, json,  redirect, url_for, session
 
 from Model.users import users
+from Model.creditCard import creditCard
 from config import db, app
 
 
@@ -35,7 +36,7 @@ def register():
                     usr = users(_name, _surname, _email, _password, _address, _city, _country, _telephone)
                     db.session.add(usr)
                     db.session.commit()
-                    return redirect(url_for("login"))      
+                    return redirect(url_for("login"))
             else:
                  error = "Every field must be filed."
                  return render_template('register.html', error=error)
@@ -120,6 +121,30 @@ def modifyProfile():
                     verified=found_user.verified)
         else:
             return redirect(url_for("login")) 
+
+@app.route('/addCreditCard', methods=['POST', 'GET'])
+def addCreditCard():
+    if request.method == "POST":
+        try:
+            _cdNumber = request.form["cdNumModify"]
+            _cdName = request.form["cdNameModify"]
+            _expDate = request.form["expModify"]
+            _securityCode = request.form["codeModify"]
+            
+            if _cdNumber and _cdName and _expDate and _securityCode:
+                found_user = creditCard.query.filter_by(cdNumber=_cdNumber).first()
+                if found_user:               
+                    error = "User with this credit card number already exists."
+                    return render_template('addCreditCard.html', error=error)
+                else:
+                    usr = creditCard(_cdNumber,_cdName,_expDate,_securityCode)
+                    db.session.add(usr)
+                    db.session.commit()
+                    return redirect(url_for("modifyProfile"))   
+        except Exception as e:
+            return "Error"
+    else:
+        return redirect(url_for("modifyProfile"))
 @app.route('/market')
 def market():
     if "user" in session:

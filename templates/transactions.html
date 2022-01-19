@@ -2,7 +2,39 @@
 {% block title %}Python Flask WEB App{% endblock %}
 {% block content %}
 
-
+  <div class="wrapper rounded">
+    <nav class="navbar navbar-expand-lg navbar-dark dark d-lg-flex align-items-lg-start"> 
+      <div class="navbar-brand">
+        <p class="text-muted pl-1">Welcome to your transactions</p> 
+      </div>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <ul class="nav nav-tabs w-75">
+            <li class="nav-item"></li>
+        </ul> 
+        <a href="trade.html">
+        <button type="button" class="btn btn-primary">New Transaction</button>
+        </a>
+    </div>
+    <div class="table-responsive mt-3">
+        <table class="table table-dark table-borderless">
+            <thead>
+                <tr>
+                    <th scope="col">Activity</th>
+                    <th scope="col">Date</th>
+                    <th scope="col" class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td scope="row"> <span class="fa fa-briefcase mr-1"></span> USD -> Litecoin </td>
+                    <td class="text-muted">19 Jan 2022, 12:30 PM</td>
+                    <td class="d-flex justify-content-end align-items-center"> <span class="fa fa-long-arrow-up mr-1"></span> $52.9 </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+  </div>
   {% if error %}
     <p><strong>Error:</strong> {{ error }}
   {% endif %}
