@@ -126,25 +126,32 @@ def modifyProfile():
 def addCreditCard():
     if request.method == "POST":
         try:
-            _cdNumber = request.form["cdNumModify"]
-            _cdName = request.form["cdNameModify"]
-            _expDate = request.form["expModify"]
-            _securityCode = request.form["codeModify"]
+            _cdNumber = request.form["cdNumber"]
+            _cdName = request.form["cdName"]
+            _expDate = request.form["expDate"]
+            _securityCode = request.form["securityCode"]
             
             if _cdNumber and _cdName and _expDate and _securityCode:
-                found_user = creditCard.query.filter_by(cdNumber=_cdNumber).first()
-                if found_user:               
+                found_cd = creditCard.query.filter_by(cdNumber=_cdNumber).first()
+                if found_cd:               
                     error = "User with this credit card number already exists."
                     return render_template('addCreditCard.html', error=error)
                 else:
-                    usr = creditCard(_cdNumber,_cdName,_expDate,_securityCode)
-                    db.session.add(usr)
+                    cd = creditCard(_cdNumber,_cdName,_expDate,_securityCode)
+                    db.session.add(cd)
+                    users.verified = True
                     db.session.commit()
-                    return redirect(url_for("modifyProfile"))   
+                    return redirect(url_for("userHome"))
+            else:
+                 error = "Every field must be filed."
+                 return render_template('addCreditCard.html', error=error)     
         except Exception as e:
             return "Error"
     else:
-        return redirect(url_for("modifyProfile"))
+        if "user" in session:
+            return redirect(url_for("userHome"))
+        else:
+            return render_template('addCreditCard.html')
 @app.route('/market')
 def market():
     if "user" in session:
