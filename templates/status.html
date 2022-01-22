@@ -1,24 +1,13 @@
 {% extends "baseUser.html" %}
 {% block title %}Python Flask WEB App{% endblock %}
 {% block content %}
-  <form action="#" method="get">
-    <br><br>
-    <div class="form-row">
-      <div class="form-group col-md-6">
-        <label for="inputEmail4">Credit Card Ending in {{cdNumber}}</label>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group col-md-6">
-        <button type="button" class="btn btn-primary" title="Show Credit Card Info" onclick="alert('No Credit Card Added')">Info</button>
-      </div>
-    </div>
+
+<h3>Credit card status</h3><br>
+<p>Credit card name: {{cdName}}</p>
     
-    
-    <p>Amount balance: {{amount}} <br></p>
-  </form>
-  {% if error %}
-    <p><strong>Error:</strong> {{ error }}
-  {% endif %}
+<p>Card expires: {{expDate}}</p>
+
+<p><b>Amount balance on card: {{amount}}$ </b></p>
+  
 
 {% endblock %}

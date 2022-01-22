@@ -4,28 +4,26 @@
 
 <h3>Add your credit card info</h3>
 
-  <form action="/addCreditCard" method="post">
+  <form action="#" method="post">
     <div class="form-row">
       <div class="form-group col-md-8">
         <label for="inputCdNumber">Credit Card Number: </label>
-        <input type="text" class="form-control" name="cdNumber" id="cdNumber" value={{cdNumber}} placeholder="Card Number">
+        <input type="text" class="form-control" name="cdNumber" id="cdNumber" placeholder="Card Number">
       </div>
       <div class="form-group col-md-6">
         <label for="inputCdName">Credit Card Name: </label>
-        <input type="text" class="form-control" name="cdName" id="cdName" value={{cdName}} placeholder="Name on Card">
+        <input type="text" class="form-control" name="cdName" id="cdName" placeholder="Name on Card">
       </div>
       <div class="form-group col-md-4">
         <label for="inputExpDate">Expiration Date: </label>
-        <input type="text" class="form-control" name="expDate" id="expDate" value={{expDate}} placeholder="MM/YY">
+        <input type="text" class="form-control" name="expDate" id="expDate" placeholder="MM/YY">
       </div>
       <div class="form-group col-md-2">
         <label for="inputSecurityCode">Security Code</label>
-        <input type="text" class="form-control" name="securityCode" id="securityCode" value={{securityCode}} placeholder="CVC">
+        <input type="text" class="form-control" name="securityCode" id="securityCode" placeholder="CVC">
       </div>
     </div>
-    <p>Verified profile:{{verified}} <br>
-    </p>
-    <button type="submit" class="btn btn-primary">Add</button>
+    <button type="submit" class="btn btn-primary">Add Credit Card</button>
   </form>
   {% if error %}
     <p><strong>Error:</strong> {{ error }}

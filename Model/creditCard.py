@@ -6,12 +6,14 @@ class creditCard(db.Model):
     cdName = db.Column(db.String(100))
     expDate = db.Column(db.String(100))
     securityCode = db.Column(db.String(3))
+    cardAmount = db.Column(db.Integer)
 
     def __init__(self,cdNumber,cdName,expDate,securityCode):
         self.cdNumber = cdNumber
         self.cdName = cdName
         self.expDate = expDate
         self.securityCode = securityCode
+        self.cardAmount = 200
 
         def __repr__(self):
             return '<User %r>' % self.cdNumber
@@ -21,3 +23,4 @@ class cdSchema(Schema):
     cdName = fields.Str()
     expDate = fields.Str()
     securityCode = fields.Str()
+    cardAmount = fields.Integer()

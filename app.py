@@ -12,6 +12,11 @@ def main():
      if "user" in session:
         return redirect(url_for("userHome"))
      else:
+        found_cd = creditCard.query.filter_by(cdNumber="4242 4242 4242 4242").first()
+        if (found_cd == None):
+            cd = creditCard("4242 4242 4242 4242","Pera Peric","02/23","123")
+            db.session.add(cd)
+            db.session.commit()
         return render_template('index.html')
 
 @app.route('/register', methods=['POST', 'GET'])
@@ -72,7 +77,8 @@ def login():
 def userHome():
     if "user" in session:
         user = session["user"]
-        return render_template('userHome.html', user=user)
+        found_user = users.query.filter_by(email=user).first()
+        return render_template('userHome.html', user=found_user.firstName, amount=found_user.amount)
     else:
          return redirect(url_for("login"))   
 
@@ -108,8 +114,7 @@ def modifyProfile():
             else:
                 error = "Every field must be filed."
                 return render_template('modifyProfile.html', fn=found_user.firstName, ln=found_user.lasttName, email=found_user.email, password=found_user.password, 
-                    address=found_user.address, country=found_user.country, city=found_user.city, tel=found_user.telephone, amount=found_user.amount, 
-                    verified=found_user.verified, error=error)
+                    address=found_user.address, country=found_user.country, city=found_user.city, tel=found_user.telephone, verified=found_user.verified, error=error)
         except Exception as e:
             return "Error"
     else:
@@ -133,15 +138,18 @@ def addCreditCard():
             
             if _cdNumber and _cdName and _expDate and _securityCode:
                 found_cd = creditCard.query.filter_by(cdNumber=_cdNumber).first()
-                if found_cd:               
-                    error = "User with this credit card number already exists."
-                    return render_template('addCreditCard.html', error=error)
-                else:
-                    cd = creditCard(_cdNumber,_cdName,_expDate,_securityCode)
-                    db.session.add(cd)
-                    users.verified = True
+                if found_cd != None and _cdNumber == found_cd.cdNumber and _cdName == found_cd.cdName and _expDate == found_cd.expDate and _securityCode == found_cd.securityCode:               
+                    user = session["user"]
+                    found_user = users.query.filter_by(email=user).first()
+                    found_user.verified = True
+                    found_user.cdNumber = _cdNumber
+                    found_cd.cardAmount = found_cd.cardAmount - 1
                     db.session.commit()
-                    return redirect(url_for("userHome"))
+                    return redirect(url_for("userHome")) 
+                else:
+                    error = "Wrong credentials for credit card."
+                    return render_template('addCreditCard.html', error=error)
+                    
             else:
                  error = "Every field must be filed."
                  return render_template('addCreditCard.html', error=error)     
@@ -149,9 +157,15 @@ def addCreditCard():
             return "Error"
     else:
         if "user" in session:
-            return redirect(url_for("userHome"))
+            user = session["user"]
+            found_user = users.query.filter_by(email=user).first()
+            if (found_user.verified):
+                return render_template("addCreditCardError.html")
+            else:
+                return render_template("addCreditCard.html")
         else:
-            return render_template('addCreditCard.html')
+            return redirect(url_for("login"))
+
 @app.route('/market')
 def market():
     if "user" in session:
@@ -159,20 +173,53 @@ def market():
         return render_template('market.html', user=user)
     else:
         return redirect(url_for("login"))
-@app.route('/depositWithdraw')
-def depositWithdraw():
-    if "user" in session:
+
+@app.route('/deposit', methods=['POST', 'GET'])
+def deposit():
+    if request.method == "POST":
         user = session["user"]
-        return render_template('depositWithdraw.html', user=user)
+        found_user = users.query.filter_by(email=user).first()
+        if (found_user.verified == True):
+            try:
+                _deposit = request.form["deposit"]
+            
+                if _deposit:
+                    found_cd = creditCard.query.filter_by(cdNumber=found_user.cdNumber).first()
+                    if (found_cd.cardAmount - int(_deposit) >= 0):
+                        found_cd.cardAmount = found_cd.cardAmount - int(_deposit)
+                        found_user.amount = found_user.amount + int(_deposit)
+                        db.session.commit()
+                        return redirect(url_for("userHome")) 
+                    else:
+                        error = "Deposit failed. Not enough money on card."
+                        return render_template('deposit.html', error=error)  
+                else:
+                    error = "Every field must be filed."
+                    return render_template('deposit.html', error=error)  
+            except Exception as e:
+                return "Error"
+        else:
+            error = "User is not verified!"
+            return render_template('deposit.html', error=error)   
     else:
-        return redirect(url_for("login"))
+        if "user" in session:
+            return render_template('deposit.html')
+        else:
+            return redirect(url_for("login"))
+
 @app.route('/status')
 def status():
     if "user" in session:
         user = session["user"]
-        return render_template('status.html', user=user)
+        found_user = users.query.filter_by(email=user).first()
+        if (found_user.verified == True):
+            found_cd = creditCard.query.filter_by(cdNumber=found_user.cdNumber).first()
+            return render_template('status.html', cdName=found_cd.cdName, expDate=found_cd.expDate, amount=found_cd.cardAmount)
+        else:
+             return render_template('statusError.html')
     else:
         return redirect(url_for("login"))
+
 @app.route('/trade')
 def trade():
     if "user" in session:
@@ -180,6 +227,7 @@ def trade():
         return render_template('trade.html', user=user)
     else:
         return redirect(url_for("login"))
+
 @app.route('/transactions')
 def transactions():
     if "user" in session:

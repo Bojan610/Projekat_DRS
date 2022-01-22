@@ -12,6 +12,7 @@ class users(db.Model):
     telephone = db.Column(db.String(100))
     amount = db.Column(db.Integer)
     verified = db.Column(db.Boolean)
+    cdNumber = db.Column(db.String(100))
 
     def __init__(self, firstName, lasttName, email, password, address, city, country, tel):
         self.firstName = firstName
@@ -21,9 +22,10 @@ class users(db.Model):
         self.address = address
         self.city = city
         self.country = country
-        self.tel = tel
+        self.telephone = tel
         self.amount = 0
         self.verified = False
+        cdNumber = "0"
 
         def __repr__(self):
             return '<User %r>' % self.fname
@@ -36,6 +38,7 @@ class UserSchema(Schema):
     address = fields.Str()
     city = fields.Str()
     country = fields.Str()
-    tel = fields.Number()
+    telephone = fields.Number()
     amount = fields.Integer()
     verified = fields.Boolean()
+    cdNumber = fields.Str()
