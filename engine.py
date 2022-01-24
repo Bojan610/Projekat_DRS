@@ -1,11 +1,14 @@
-#from flask import Flask
-import socket
-from config import specified_port, db
-from Model.creditCard import creditCard
+from flask import request, jsonify
+import threading
+
+from config import specified_port, db, engine
 from Model.users import users, to_string
 from Model.creditCard import creditCard, card_to_string
 
-def first_function(_cdNumber):
+@engine.route('/first', methods=['POST'])
+def first_function():
+    _cdNumber = request.get_data()
+    _cdNumber = _cdNumber.decode()
     found_cd = creditCard.query.filter_by(cdNumber=_cdNumber).first()
     if (found_cd == None):
         cd = creditCard("4242 4242 4242 4242", "Pera Peric", "02/23", "123")
@@ -19,35 +22,40 @@ def first_function(_cdNumber):
         print("Retval is: " + rv)
     return rv
 
-def second_function(poruka):
+@engine.route('/second',methods=['POST'])
+def second_function():
+    poruka = request.get_data().decode()
     p_list = poruka.split('|')
     found_user = users.query.filter_by(email=p_list[2]).first()
     if found_user:
         ans = "User with this email already exists."
-        return ans
+        return ans.encode("utf-8")
     else:
         usr = users(p_list[0], p_list[1], p_list[2], p_list[3], p_list[4], p_list[5], p_list[6], p_list[7])
         db.session.add(usr)
         db.session.commit()
-        return "success"
+        return "success".encode("utf-8")
 
-
-def third_function(poruka):
+@engine.route('/third',methods=['POST'])
+def third_function():
+    poruka = request.get_data().decode()
     p_list = poruka.split('|')
     found_user = users.query.filter_by(email=p_list[0]).first()
     if found_user != None and p_list[0] == found_user.email and p_list[1] == found_user.password:
-        return found_user.email
+        return found_user.email.encode("utf-8")
     else:
         return "Wrong email address and/or password."
 
-
-def fourth_function(poruka):
+@engine.route('/fourth',methods=['POST'])
+def fourth_function():
+    poruka = request.get_data().decode()
     found_user = users.query.filter_by(email=poruka).first()
-    return to_string(found_user)
+    return to_string(found_user).encode("utf-8")
 
-
-def fifth_function(poruka):
+@engine.route('/fifth',methods=['POST'])
+def fifth_function():
     #user|_name|_surname|_password|_address|_city|_country|_telephone
+    poruka = request.get_data().decode()
     poruka = poruka.split('|')
     found_user = users.query.filter_by(email=poruka[0]).first()
     if (poruka[1] and poruka[2] and poruka[3] and poruka[4] and poruka[5] and poruka[6] and poruka[7]):
@@ -59,26 +67,30 @@ def fifth_function(poruka):
         found_user.city = poruka[6]
         found_user.telephone = poruka[7]
         db.session.commit()
-        return to_string(found_user)
+        return to_string(found_user).encode("utf-8")
     else:
-        return "err||" + to_string(found_user)
+        return ("err||" + to_string(found_user)).encode("utf-8")
 
-def sixth_function(poruka):
+@engine.route('/sixth',methods=['POST'])
+def sixth_function():
+    poruka = request.get_data().decode()
     found_user = users.query.filter_by(email=poruka).first()
-    return to_string(found_user)
+    return to_string(found_user).encode("utf-8")
 
-
-def seventh_function(poruka):
+@engine.route('/seventh',methods=['POST'])
+def seventh_function():
     #_cdNumber
+    poruka = request.get_data().decode()
     found_cd = creditCard.query.filter_by(cdNumber=poruka).first()
     if(found_cd == None):
         return "none"
     else:
-        return card_to_string(found_cd)
+        return card_to_string(found_cd).encode("utf-8")
 
-
-def eighth_function(poruka):
+@engine.route('/eighth',methods=['POST'])
+def eighth_function():
     #user|_cdNumber
+    poruka = request.get_data().decode()
     poruka = poruka.split("|")
     user = poruka[0]
     _cdNumber = poruka[1]
@@ -90,18 +102,21 @@ def eighth_function(poruka):
     db.session.commit()
     return "Success"
 
-
-def ninth_function(poruka):
+@engine.route('/ninth',methods=['POST'])
+def ninth_function():
+    poruka = request.get_data().decode()
     found_user =users.query.filter_by(email=poruka).first()
-    return to_string(found_user)
+    return to_string(found_user).encode("utf-8")
 
-
-def tenth_function(poruka):
+@engine.route('/tenth',methods=['POST'])
+def tenth_function():
+    poruka = request.get_data().decode()
     found_user = users.query.filter_by(email=poruka).first()
-    return to_string(found_user)
+    return to_string(found_user).encode("utf-8")
 
-
-def eleventh_function(poruka):
+@engine.route('/eleventh',methods=['POST'])
+def eleventh_function():
+    poruka = request.get_data().decode()
     #user|_deposit
     p = poruka.split("|")
     user = p[0]
@@ -116,80 +131,18 @@ def eleventh_function(poruka):
     else:
         return "failure"
 
-def twelveth_function(poruka):
+@engine.route('/twelveth',methods=['POST'])
+def twelveth_function():
+    poruka = request.get_data().decode()
     found_user = users.query.filter_by(email=poruka).first()
     if (found_user.verified == True):
         # slati serveru
         found_cd = creditCard.query.filter_by(cdNumber=found_user.cdNumber).first()
-        return card_to_string(found_cd)
+        return card_to_string(found_cd).encode("utf-8")
     else:
         return "failure"
 
 
+
 if __name__ == "__main__":
-    db.create_all()
-    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM,0)
-    print ("Socket successfully created!")
-    s.bind(('',specified_port))
-    print("socket binded to %s" % (specified_port))
-    #parametar oznacava broj "unaccepted" konekcija koje su dozvoljene pre nego sto "server" pocne da odbija nove konekcije
-    s.listen(12)
-    print("socket is listening")
-
-    while True:
-        # Establish connection with client.
-        c, addr = s.accept()
-        print('Got connection from', addr)
-        try:
-            msg = c.recv(4096)
-            x = msg.decode("utf-8")
-            print("Message received: " + x)
-            if("req-1|" in x):
-                e = x.removeprefix("req-1|")
-                answer = first_function(e)
-            elif("req-2|" in x):
-                e = x.removeprefix("req-2|")
-                answer = second_function(e)
-            elif("req-3|" in x):
-                e = x.removeprefix("req-3|")
-                answer = third_function(e)
-            elif("req-4|" in x):
-                e = x.removeprefix("req-4|")
-                answer = fourth_function(e)
-            elif("req-5|" in x):
-                e = x.removeprefix("req-5|")
-                answer = fifth_function(e)
-            elif("req-6|" in x):
-                e = x.removeprefix("req-6|")
-                answer = sixth_function(e)
-            elif ("req-7|" in x):
-                e = x.removeprefix("req-7|")
-                answer = seventh_function(e)
-            elif ("req-8|" in x):
-                e = x.removeprefix("req-8|")
-                answer = eighth_function(e)
-            elif ("req-9|" in x):
-                e = x.removeprefix("req-9|")
-                answer = ninth_function(e)
-            elif ("req-10|" in x):
-                e = x.removeprefix("req-10|")
-                answer = tenth_function(e)
-            elif ("req-11|" in x):
-                e = x.removeprefix("req-11|")
-                answer = eleventh_function(e)
-            elif ("req-12|" in x):
-                e = x.removeprefix("req-12|")
-                answer = twelveth_function(e)
-            else:
-                answer = "unknown request"
-            print("Answer sent: " + answer)
-            c.sendall(answer.encode())
-        except:
-            continue
-        finally:
-            continue
-c.close()
-
-
-
-
+    engine.run(port=specified_port,debug=True)

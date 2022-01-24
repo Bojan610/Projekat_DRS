@@ -1,28 +1,24 @@
-from flask import Flask, render_template, request, json,  redirect, url_for, session
+import requests
+from flask import Flask, render_template, request, redirect, url_for, session
 
 from Model.users import from_string
 from Model.creditCard import card_from_string
-from config import app, specified_port
-import socket
+from config import engine_address
 
+app = Flask(__name__)
+app.secret_key = "user"
 
 @app.route('/')  # prepravljeno
 def main():
-    s = socket.socket()
-    # connect to the server on local computer
-    s.connect(('127.0.0.1', specified_port))
     if "user" in session:
-        s.close()
         return redirect(url_for("userHome"))
     else:
+        adresa = engine_address
         cNumber = "4242 4242 4242 4242"
-        send_string = "req-1|" + cNumber
-        x = send_string.encode()
-        s.sendall(x)
-        print("This hit")
-        tmp = s.recv(4096)
-        found_cd = card_from_string(tmp.decode("utf-8"))
-        s.close()
+        adresa += '/first'
+        r = requests.post(adresa,data = cNumber)
+        tmp = r.content.decode()
+        found_cd = card_from_string(tmp)
         return render_template('index.html')
 
 @app.route('/register', methods=['POST', 'GET'])  #prepravljeno
@@ -39,28 +35,17 @@ def register():
             _telephone = request.form["tel"]
 
             if _name and _surname and _email and _password and _address and _city and _country and _telephone:
-                #OVO ISTO SLATI SERVERU I CEKATI ODGOVOR
-                msg = "req-2|" + _name + "|" + _surname + "|" + _email + "|" + _password + "|" + _address + "|" \
+                msg = _name + "|" + _surname + "|" + _email + "|" + _password + "|" + _address + "|" \
                       + _city + "|" +_country + "|" + _telephone
-                s = socket.socket()
-                # connect to the server on local computer
-                s.connect(('127.0.0.1', specified_port))
-                s.send(msg.encode())
-                # found_user = users.query.filter_by(email=_email).first()
-                msg = s.recv(4096)
-                s.close()
+                adresa = engine_address
+                adresa += '/second'
+                r = requests.post(adresa, data=msg.encode("utf-8"))
+                msg = r.content
                 msg = msg.decode("utf-8")
                 if(msg == "User with this email already exists."):
                     error = msg
                     return render_template('register.html', error=error)
-                #if found_user:
-                #    error = "User with this email already exists."
-                #    return render_template('register.html', error=error)
-                #else:
-                #    usr = users(_name, _surname, _email, _password, _address, _city, _country, _telephone)
-                #    db.session.add(usr)
-                #    db.session.commit()
-                if(msg == "success"):
+            if(msg == "success"):
                     return redirect(url_for("login"))
             else:
                  error = "Every field must be filed."
@@ -78,18 +63,15 @@ def login():
      if request.method == "POST":
         if request.form["emailLogIn"] and request.form["passwordLogIn"]:
             #OVO SE ISTO SALJE SERVERU I CEKA SE ODGOVOR
-            msg = "req-3|" + request.form["emailLogIn"] + "|" + request.form["passwordLogIn"]
-            s = socket.socket()
-            # connect to the server on local computer
-            s.connect(('127.0.0.1', specified_port))
-            s.send(msg.encode())
-            msg = s.recv(4096)
+            msg = request.form["emailLogIn"] + "|" + request.form["passwordLogIn"]
+            adresa = engine_address
+            adresa += '/third'
+            r = requests.post(adresa, data=msg.encode("utf-8"))
+            msg = r.content
             msg = msg.decode("utf-8")
-            s.close()
             if(msg == "Wrong email address and/or password."):
                 error = msg
                 return render_template('login.html', error=error)
-            #found_user = users.query.filter_by(email=request.form["emailLogIn"]).first()
             else:
                 session["user"] = msg
                 return redirect(url_for("userHome"))
@@ -107,27 +89,22 @@ def login():
 def userHome():
     if "user" in session:
         user = session["user"]
-        #OVO ISTO SE SIGURNO SALJE SERVERU
-        msg = "req-4|" + user
-        s = socket.socket()
-        # connect to the server on local computer
-        s.connect(('127.0.0.1', specified_port))
-        s.send(msg.encode())
-        msg = s.recv(4096)
-        s.close()
+        msg = user
+        adresa = engine_address
+        adresa += '/fourth'
+        r = requests.post(adresa, data=msg.encode("utf-8"))
+        msg = r.content
         found_user = from_string(msg.decode("utf-8"))
-        #found_user =
-        #found_user = users.query.filter_by(email=user).first()
         return render_template('userHome.html', user=found_user.firstName, amount=found_user.amount)
     else:
          return redirect(url_for("login"))   
 
-@app.route('/logout') # prepravljeno
+@app.route('/logout')
 def logout():
     session.pop("user", None)
     return redirect(url_for('main'))   
 
-@app.route('/modifyProfile', methods=['POST', 'GET']) #NIJE prepravljeno
+@app.route('/modifyProfile', methods=['POST', 'GET'])
 def modifyProfile():
     if request.method == "POST":
         try:
@@ -140,16 +117,12 @@ def modifyProfile():
             _telephone = request.form["telModify"]
 
             user = session["user"]
-            #SLATI SERVERU
-            msg = "req-5|" + user + "|" + _name + "|"+ _surname + "|"+ _password + "|"
+            msg = user + "|" + _name + "|"+ _surname + "|"+ _password + "|"
             msg = msg + _address + "|"+ _city + "|"+ _country + "|" + _telephone
-            s = socket.socket()
-            # connect to the server on local computer
-            s.connect(('127.0.0.1', specified_port))
-            s.send(msg.encode())
-            msg = s.recv(4096)
-            msg = msg.decode("utf-8")
-            s.close()
+            adresa = engine_address
+            adresa += '/fifth'
+            r = requests.post(adresa, data=msg.encode("utf-8"))
+            msg = r.content.decode()
             if("err||" in msg):
                 error = "Every field must be filled."
                 m = msg
@@ -167,15 +140,11 @@ def modifyProfile():
     else:
         if "user" in session:
             user = session["user"]
-            #SLATI SERVERU
-            #found_user = users.query.filter_by(email=user).first()
-            msg = "req-6|" + user
-            s = socket.socket()
-            # connect to the server on local computer
-            s.connect(('127.0.0.1', specified_port))
-            s.send(msg.encode())
-            msg = s.recv(4096)
-            s.close()
+            msg = user
+            adresa = engine_address
+            adresa += '/sixth'
+            r = requests.post(adresa, data=msg.encode("utf-8"))
+            msg = r.content
             found_user = from_string(msg.decode("utf-8"))
             return render_template('modifyProfile.html', fn=found_user.firstName, ln=found_user.lasttName, email=found_user.email, password=found_user.password, 
                     address=found_user.address, country=found_user.country, city=found_user.city, tel=found_user.telephone, amount=found_user.amount, 
@@ -194,27 +163,22 @@ def addCreditCard():
             
             if _cdNumber and _cdName and _expDate and _securityCode:
                 #SLATI SERVERU
-                msg = "req-7|" + _cdNumber
-                s = socket.socket()
-                # connect to the server on local computer
-                s.connect(('127.0.0.1', specified_port))
-                s.send(msg.encode())
-                msg = s.recv(4096)
-                msg = msg.decode("utf-8")
-                s.close()
+                msg = _cdNumber
+                adresa = engine_address
+                adresa += '/seventh'
+                r = requests.post(adresa, data=msg.encode("utf-8"))
+                msg = r.content.decode("utf-8")
                 if(msg == "none"):
                     found_cd = None
                 else:
                     found_cd = card_from_string(msg)
-                #found_cd = creditCard.query.filter_by(cdNumber=_cdNumber).first()
                 if found_cd != None and _cdNumber == found_cd.cdNumber and _cdName == found_cd.cdName and _expDate == found_cd.expDate and _securityCode == found_cd.securityCode:
                     user = session["user"]
-                    msg = "req-8|" + user +"|" + _cdNumber
-                    s = socket.socket()
-                    # connect to the server on local computer
-                    s.connect(('127.0.0.1', specified_port))
-                    s.send(msg.encode())
-                    msg = s.recv(4096)
+                    msg = user +"|" + _cdNumber
+                    adresa = engine_address
+                    adresa += '/eighth'
+                    r = requests.post(adresa, data=msg.encode("utf-8"))
+                    msg = r.content.decode("utf-8")
                     return redirect(url_for("userHome"))
                 else:
                     error = "Wrong credentials for credit card."
@@ -227,18 +191,12 @@ def addCreditCard():
     else:
         if "user" in session:
             user = session["user"]
-            #slati serveru
-            msg = "req-9|" + user
-            s = socket.socket()
-            # connect to the server on local computer
-            s.connect(('127.0.0.1', specified_port))
-            s.send(msg.encode())
-            msg = s.recv(4096)
-            msg = msg.decode("utf-8")
-            s.close()
+            msg = user
+            adresa = engine_address
+            adresa += '/ninth'
+            r = requests.post(adresa, data=msg.encode("utf-8"))
+            msg = r.content.decode("utf-8")
             found_user = from_string(msg)
-            #
-            #found_user = users.query.filter_by(email=user).first()
             if (found_user.verified):
                 return render_template("addCreditCardError.html")
             else:
@@ -254,36 +212,25 @@ def market():
     else:
         return redirect(url_for("login"))
 
-@app.route('/deposit', methods=['POST', 'GET'])#NIJE PREBACENO
+@app.route('/deposit', methods=['POST', 'GET'])
 def deposit():
     if request.method == "POST":
         user = session["user"]
-        #slati serveru
-        msg = "req-10|" + user
-        s = socket.socket()
-        # connect to the server on local computer
-        s.connect(('127.0.0.1', specified_port))
-        s.send(msg.encode())
-        msg = s.recv(4096)
-        msg = msg.decode("utf-8")
-        s.close()
+        msg = user
+        adresa = engine_address
+        adresa += '/tenth'
+        r = requests.post(adresa, data=msg.encode("utf-8"))
+        msg = r.content.decode("utf-8")
         found_user = from_string(msg)
-        #found_user = users.query.filter_by(email=user).first()
         if (found_user.verified == True):
             try:
                 _deposit = request.form["deposit"]
                 if _deposit:
-                    #slati serveru
-                    msg = "req-11|" + user + "|" + _deposit
-                    s = socket.socket()
-                    # connect to the server on local computer
-                    s.connect(('127.0.0.1', specified_port))
-                    s.send(msg.encode())
-                    msg = s.recv(4096)
-                    msg = msg.decode("utf-8")
-                    s.close()
-                    #
-                    #found_cd = creditCard.query.filter_by(cdNumber=found_user.cdNumber).first()
+                    msg = user + "|" + _deposit
+                    adresa = engine_address
+                    adresa += '/eleventh'
+                    r = requests.post(adresa, data=msg.encode("utf-8"))
+                    msg = r.content.decode("utf-8")
                     if (msg == "success"):
                         return redirect(url_for("userHome")) 
                     else:
@@ -303,19 +250,16 @@ def deposit():
         else:
             return redirect(url_for("login"))
 
-@app.route('/status')#NIJE PREBACENO
+@app.route('/status')
 def status():
     if "user" in session:
         user = session["user"]
-        # slati serveru
-        msg = "req-12|" + user
-        s = socket.socket()
-        # connect to the server on local computer
-        s.connect(('127.0.0.1', specified_port))
-        s.send(msg.encode())
-        msg = s.recv(4096)
+        msg = user
+        adresa = engine_address
+        adresa += '/twelveth'
+        r = requests.post(adresa, data=msg.encode("utf-8"))
+        msg = r.content
         msg = msg.decode("utf-8")
-        s.close()
         if(msg == "failure"):
             return render_template('statusError.html')
         else:
@@ -325,7 +269,7 @@ def status():
     else:
         return redirect(url_for("login"))
 
-@app.route('/trade') #NE TREBA ZA SAD
+@app.route('/trade')
 def trade():
     if "user" in session:
         user = session["user"]
@@ -333,7 +277,7 @@ def trade():
     else:
         return redirect(url_for("login"))
 
-@app.route('/transactions') #NE TREBA ZA SAD
+@app.route('/transactions')
 def transactions():
     if "user" in session:
         user = session["user"]
