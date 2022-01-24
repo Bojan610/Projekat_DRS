@@ -20,9 +20,8 @@ def main():
         x = send_string.encode()
         s.sendall(x)
         print("This hit")
-        tmp = s.recv(2048)
+        tmp = s.recv(4096)
         found_cd = card_from_string(tmp.decode("utf-8"))
-        print("This hit")
         s.close()
         return render_template('index.html')
 
@@ -48,7 +47,7 @@ def register():
                 s.connect(('127.0.0.1', specified_port))
                 s.send(msg.encode())
                 # found_user = users.query.filter_by(email=_email).first()
-                msg = s.recv(2048)
+                msg = s.recv(4096)
                 s.close()
                 msg = msg.decode("utf-8")
                 if(msg == "User with this email already exists."):
@@ -84,7 +83,7 @@ def login():
             # connect to the server on local computer
             s.connect(('127.0.0.1', specified_port))
             s.send(msg.encode())
-            msg = s.recv(2048)
+            msg = s.recv(4096)
             msg = msg.decode("utf-8")
             s.close()
             if(msg == "Wrong email address and/or password."):
@@ -114,7 +113,7 @@ def userHome():
         # connect to the server on local computer
         s.connect(('127.0.0.1', specified_port))
         s.send(msg.encode())
-        msg = s.recv(2048)
+        msg = s.recv(4096)
         s.close()
         found_user = from_string(msg.decode("utf-8"))
         #found_user =
@@ -148,7 +147,7 @@ def modifyProfile():
             # connect to the server on local computer
             s.connect(('127.0.0.1', specified_port))
             s.send(msg.encode())
-            msg = s.recv(2048)
+            msg = s.recv(4096)
             msg = msg.decode("utf-8")
             s.close()
             if("err||" in msg):
@@ -175,7 +174,7 @@ def modifyProfile():
             # connect to the server on local computer
             s.connect(('127.0.0.1', specified_port))
             s.send(msg.encode())
-            msg = s.recv(2048)
+            msg = s.recv(4096)
             s.close()
             found_user = from_string(msg.decode("utf-8"))
             return render_template('modifyProfile.html', fn=found_user.firstName, ln=found_user.lasttName, email=found_user.email, password=found_user.password, 
@@ -200,7 +199,7 @@ def addCreditCard():
                 # connect to the server on local computer
                 s.connect(('127.0.0.1', specified_port))
                 s.send(msg.encode())
-                msg = s.recv(2048)
+                msg = s.recv(4096)
                 msg = msg.decode("utf-8")
                 s.close()
                 if(msg == "none"):
@@ -209,17 +208,17 @@ def addCreditCard():
                     found_cd = card_from_string(msg)
                 #found_cd = creditCard.query.filter_by(cdNumber=_cdNumber).first()
                 if found_cd != None and _cdNumber == found_cd.cdNumber and _cdName == found_cd.cdName and _expDate == found_cd.expDate and _securityCode == found_cd.securityCode:
-                    error = "Wrong credentials for credit card."
-                    return render_template('addCreditCard.html', error=error)
-                else:
                     user = session["user"]
                     msg = "req-8|" + user +"|" + _cdNumber
                     s = socket.socket()
                     # connect to the server on local computer
                     s.connect(('127.0.0.1', specified_port))
                     s.send(msg.encode())
-                    msg = s.recv(2048)
+                    msg = s.recv(4096)
                     return redirect(url_for("userHome"))
+                else:
+                    error = "Wrong credentials for credit card."
+                    return render_template('addCreditCard.html', error=error)
             else:
                  error = "Every field must be filed."
                  return render_template('addCreditCard.html', error=error)     
@@ -234,7 +233,7 @@ def addCreditCard():
             # connect to the server on local computer
             s.connect(('127.0.0.1', specified_port))
             s.send(msg.encode())
-            msg = s.recv(2048)
+            msg = s.recv(4096)
             msg = msg.decode("utf-8")
             s.close()
             found_user = from_string(msg)
@@ -265,7 +264,7 @@ def deposit():
         # connect to the server on local computer
         s.connect(('127.0.0.1', specified_port))
         s.send(msg.encode())
-        msg = s.recv(2048)
+        msg = s.recv(4096)
         msg = msg.decode("utf-8")
         s.close()
         found_user = from_string(msg)
@@ -276,9 +275,13 @@ def deposit():
                 if _deposit:
                     #slati serveru
                     msg = "req-11|" + user + "|" + _deposit
+                    s = socket.socket()
+                    # connect to the server on local computer
+                    s.connect(('127.0.0.1', specified_port))
                     s.send(msg.encode())
-                    msg = s.recv(2048)
+                    msg = s.recv(4096)
                     msg = msg.decode("utf-8")
+                    s.close()
                     #
                     #found_cd = creditCard.query.filter_by(cdNumber=found_user.cdNumber).first()
                     if (msg == "success"):
@@ -310,7 +313,7 @@ def status():
         # connect to the server on local computer
         s.connect(('127.0.0.1', specified_port))
         s.send(msg.encode())
-        msg = s.recv(2048)
+        msg = s.recv(4096)
         msg = msg.decode("utf-8")
         s.close()
         if(msg == "failure"):
@@ -339,6 +342,4 @@ def transactions():
         return redirect(url_for("login"))
 
 if __name__ == "__main__":
-
-    print("Supposedly connected to server")
     app.run(port=5000,debug=True)

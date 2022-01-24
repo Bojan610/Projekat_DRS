@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields
-from config import db, ma
+from config import db
 
 class users(db.Model):
     firstName = db.Column(db.String(100))

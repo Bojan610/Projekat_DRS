@@ -1,8 +1,7 @@
 #from flask import Flask
 import socket
-from config import specified_port
+from config import specified_port, db
 from Model.creditCard import creditCard
-from config import db
 from Model.users import users, to_string
 from Model.creditCard import creditCard, card_to_string
 
@@ -105,10 +104,10 @@ def tenth_function(poruka):
 def eleventh_function(poruka):
     #user|_deposit
     p = poruka.split("|")
-    user = poruka[0]
-    _deposit = poruka[1]
+    user = p[0]
+    _deposit = p[1]
     found_user = users.query.filter_by(email=user).first()
-    found_cd = creditCard.query.filter_by(cardNumber=found_user.cdNumber).first()
+    found_cd = creditCard.query.filter_by(cdNumber=found_user.cdNumber).first()
     if (found_cd.cardAmount - int(_deposit) >= 0):
         found_cd.cardAmount = found_cd.cardAmount - int(_deposit)
         found_user.amount = found_user.amount + int(_deposit)
@@ -126,6 +125,7 @@ def twelveth_function(poruka):
     else:
         return "failure"
 
+
 if __name__ == "__main__":
     db.create_all()
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM,0)
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         c, addr = s.accept()
         print('Got connection from', addr)
         try:
-            msg = c.recv(2048)
+            msg = c.recv(4096)
             x = msg.decode("utf-8")
             print("Message received: " + x)
             if("req-1|" in x):

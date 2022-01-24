@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields
-from config import db, ma
+from config import db
 
 class creditCard(db.Model):
     cdNumber = db.Column("cdNumber", db.String(16), primary_key=True)
