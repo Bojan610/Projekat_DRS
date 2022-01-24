@@ -25,10 +25,35 @@ class users(db.Model):
         self.telephone = tel
         self.amount = 0
         self.verified = False
-        cdNumber = "0"
+        self.cdNumber = "0"
 
         def __repr__(self):
             return '<User %r>' % self.fname
+
+    def fill_class(self, amount, verified, cdNumber):
+        self.amount = amount
+        self.verified = verified
+        self.cdNumber = cdNumber
+
+
+def from_string(tekst: str):
+    tekst = tekst.split('|')
+    ans: users = users(tekst[0], tekst[1], tekst[2], tekst[3], tekst[4], tekst[5], tekst[6], tekst[7])
+    if(tekst[9] == "False"):
+        is_verified = False
+    else:
+        is_verified = True
+    ans.fill_class(int(tekst[8]), is_verified , tekst[10])
+    return ans
+
+
+def to_string(self: users):
+    ans: str = self.firstName + "|" + self.lasttName + "|"
+    ans += self.email + "|" + self.password + "|" + self.address
+    ans += "|" + self.city + "|" + self.country + "|"
+    ans += self.telephone + "|" + str(self.amount) + "|" + str(self.verified) + "|" + self.cdNumber
+    return ans
+
 
 class UserSchema(Schema):
     firstName = fields.Str()

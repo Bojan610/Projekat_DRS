@@ -18,6 +18,17 @@ class creditCard(db.Model):
         def __repr__(self):
             return '<User %r>' % self.cdNumber
 
+
+def card_to_string(self: creditCard):
+    ans = self.cdNumber + "|" + self.cdName + "|" + self.expDate + "|" + self.securityCode + "|" + str(self.cardAmount)
+    return ans
+
+def card_from_string(poruka: str):
+    p = poruka.split("|")
+    c = creditCard(p[0], p[1], p[2], p[3])
+    c.cardAmount = int(p[4])
+    return c
+
 class cdSchema(Schema):
     cdNumber = fields.Str()
     cdName = fields.Str()
