@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields
-from config import db
+from config import db, ma
 
 class users(db.Model):
     firstName = db.Column(db.String(100))
@@ -39,7 +39,7 @@ class users(db.Model):
 def from_string(tekst: str):
     tekst = tekst.split('|')
     ans: users = users(tekst[0], tekst[1], tekst[2], tekst[3], tekst[4], tekst[5], tekst[6], tekst[7])
-    if(tekst[9] == "False"):
+    if tekst[9] == "False":
         is_verified = False
     else:
         is_verified = True
