@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from Model.users import from_string
 from Model.creditCard import card_from_string
 from config import engine_address
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 app.secret_key = "user"
@@ -211,6 +212,19 @@ def market():
         return render_template('market.html', user=user)
     else:
         return redirect(url_for("login"))
+
+
+# Funkcija koja koja nalazi cenu valute
+def get_crypto_price(coin):
+
+    url = "https://www.google.com/search?q=" + coin + "+price"
+
+    HTML = requests.get(url)
+
+    soup = BeautifulSoup(HTML.text, 'html.parser')
+
+    text = soup.find("div", attrs={'class': 'BNeawe iBp4i AP7Wnd'}).find("div",attrs={'class': 'BNeawe iBp4i AP7Wnd'}).text
+    return text
 
 @app.route('/deposit', methods=['POST', 'GET'])
 def deposit():
