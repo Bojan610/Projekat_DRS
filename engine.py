@@ -1,3 +1,6 @@
+import threading
+import time
+import threading as thread
 from flask import request
 from Model.transaction import transaction_from_string
 from config import specified_port, db, engine
@@ -151,6 +154,15 @@ def thirteenth_function():
     db.session.add(poruka)
     db.session.commit()
 
+def sleep_thread(first, second, trans):
+    time.sleep(300)
+    db.session.add(trans)
+    found_user = users.query.filter_by(email=first).first()
+    traded_user = users.query.filter_by(email=second).first()
+    traded_user.amount = traded_user.amount + int(trans.tAmount)
+    trans.tState = "Obradjeno"
+    db.session.expire_on_commit = True
+    db.session.commit()
 
 @engine.route('/fourteenth',methods=['POST'])
 def fourteenth_function():
@@ -162,14 +174,12 @@ def fourteenth_function():
     second = p1[1]
     trans = transaction_from_string(p[0])
     db.session.add(trans)
-    db.session.commit()
     found_user = users.query.filter_by(email=first).first()
-    traded_user = users.query.filter_by(email=second).first()
     found_user.amount = found_user.amount - int(trans.tAmount)
-    traded_user.amount = traded_user.amount + int(trans.tAmount)
-    trans.tState = "Obradjeno"
     db.session.commit()
-    return to_string(found_user).encode("utf-8")
+    x = threading.Thread(target=sleep_thread, args=(first, second, trans))
+    x.start()
+    return "success"
 
 if __name__ == "__main__":
     engine.run(port=specified_port,debug=True)

@@ -328,9 +328,7 @@ def trade():
                 adresa += '/fourteenth'
                 msg = transaction_to_string(tr) + "," + found_user.email + "|" + _tradeEmail
                 r = requests.post(adresa, data=msg.encode("utf-8"))
-                time.sleep(5)
-                found_user = r.content.decode("utf-8")
-                found_user = from_string(found_user)
+
                 return redirect(url_for("userHome"))
 
             else:
