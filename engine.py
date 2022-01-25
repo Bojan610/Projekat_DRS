@@ -1,6 +1,5 @@
-from flask import request, jsonify
-import threading
-
+from flask import request
+from Model.transaction import transaction, transaction_from_string
 from config import specified_port, db, engine
 from Model.users import users, to_string
 from Model.creditCard import creditCard, card_to_string
@@ -10,6 +9,7 @@ def first_function():
     _cdNumber = request.get_data()
     _cdNumber = _cdNumber.decode()
     found_cd = creditCard.query.filter_by(cdNumber=_cdNumber).first()
+    #trans = transaction.query.filter_by(tName='').first()
     if (found_cd == None):
         cd = creditCard("4242 4242 4242 4242", "Pera Peric", "02/23", "123")
         db.session.add(cd)
@@ -142,7 +142,32 @@ def twelveth_function():
     else:
         return "failure"
 
+@engine.route('/thirteenth',methods=['POST'])
+def thirteenth_function():
+    poruka = request.get_data().decode("utf-8")
+    poruka = transaction_from_string(poruka)
+    db.session.add(poruka)
+    db.session.commit()
 
+
+@engine.route('/fourteenth',methods=['POST'])
+def fourteenth_function():
+
+    poruka = request.get_data().decode("utf-8")
+    p = poruka.split(",")
+    p1 = p[1].split("|")
+    first = p1[0]
+    second = p1[1]
+    trans = transaction_from_string(p[0])
+    db.session.add(trans)
+    db.session.commit()
+    found_user = users.query.filter_by(email=first).first()
+    traded_user = users.query.filter_by(email=second).first()
+    found_user.amount = found_user.amount - int(trans.tAmount)
+    traded_user.amount = traded_user.amount + int(trans.tAmount)
+    trans.tState = "Obradjeno"
+    db.session.commit()
+    return to_string(found_user).encode("utf-8")
 
 if __name__ == "__main__":
     engine.run(port=specified_port,debug=True)
