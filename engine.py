@@ -117,7 +117,10 @@ def ninth_function():
 def tenth_function():
     poruka = request.get_data().decode()
     found_user = users.query.filter_by(email=poruka).first()
-    return to_string(found_user).encode("utf-8")
+    if (found_user == None):
+        return "none"
+    else:
+        return to_string(found_user).encode("utf-8")
 
 @engine.route('/eleventh',methods=['POST'])
 def eleventh_function():
@@ -155,13 +158,12 @@ def thirteenth_function():
     db.session.commit()
 
 def sleep_thread(first, second, trans):
-    time.sleep(300)
+    time.sleep(10)
     db.session.add(trans)
     found_user = users.query.filter_by(email=first).first()
     traded_user = users.query.filter_by(email=second).first()
     traded_user.amount = traded_user.amount + int(trans.tAmount)
     trans.tState = "Obradjeno"
-    db.session.expire_on_commit = True
     db.session.commit()
 
 @engine.route('/fourteenth',methods=['POST'])

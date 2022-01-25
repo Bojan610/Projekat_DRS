@@ -314,7 +314,10 @@ def trade():
                 adresa += '/tenth'
                 r = requests.post(adresa, data=_tradeEmail.encode("utf-8"))
                 _found_user_receiver = r.content.decode("utf-8")
-                _found_user_receiver = from_string(_found_user_receiver)
+                if (_found_user_receiver == "none"):
+                    _found_user_receiver = None
+                else:
+                    _found_user_receiver = from_string(_found_user_receiver)
                 #_found_user_receiver = users.query.filter_by(email=_tradeEmail).first()
                 if (_found_user_receiver == None or _found_user_receiver.verified == False):
                     error = "Transaction failed."
