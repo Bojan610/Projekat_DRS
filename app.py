@@ -6,6 +6,8 @@ from Model.users import from_string
 from Model.creditCard import card_from_string
 from config import engine_address
 from bs4 import BeautifulSoup
+from requests import Session
+import json
 
 app = Flask(__name__)
 app.secret_key = "user"
@@ -208,11 +210,20 @@ def addCreditCard():
 
 @app.route('/market')#NEMA STA ZA SAD
 def market():
-    if "user" in session:
-        user = session["user"]
-        return render_template('market.html', user=user)
-    else:
-        return redirect(url_for("login"))
+    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
+    parameters = {
+        'slug':"bitcoin,cardano,ethereum,solana,dogecoin,polkadot,xrp,terra,avalanche,polygon,litecoin,chainlink",
+        'convert':'USD'
+    }
+    headers = {
+        'Accepts':'application/json',
+        'X-CMC_PRO_API_KEY':'d2b0d00d-f06b-43cb-b9d2-c132cbc7763e'
+    }
+    session = Session()
+    session.headers.update(headers)
+
+    response = session.get(url,params=parameters)
+    return render_template("market.html",response=json.loads(response.text)['data'])
 
 
 # Funkcija koja koja nalazi cenu valute
