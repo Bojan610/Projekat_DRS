@@ -6,6 +6,7 @@ engine = Flask(__name__)
 engine.secret_key = "user"
 engine.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.sqlite3'
 engine.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy(engine)
 
 specified_port = 20000

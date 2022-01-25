@@ -1,11 +1,13 @@
 from flask import request
-from Model.transaction import transaction, transaction_from_string
+from Model.transaction import transaction_from_string
 from config import specified_port, db, engine
 from Model.users import users, to_string
 from Model.creditCard import creditCard, card_to_string
 
 @engine.route('/first', methods=['POST'])
 def first_function():
+    db.create_all()
+    db.session.commit()
     _cdNumber = request.get_data()
     _cdNumber = _cdNumber.decode()
     found_cd = creditCard.query.filter_by(cdNumber=_cdNumber).first()
