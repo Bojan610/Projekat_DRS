@@ -1,6 +1,7 @@
 import requests
 from flask import Flask, render_template, request, redirect, url_for, session
-
+import time
+from Model.transaction import transaction, transaction_to_string
 from Model.users import from_string
 from Model.creditCard import card_from_string
 from config import engine_address
@@ -283,21 +284,93 @@ def status():
     else:
         return redirect(url_for("login"))
 
-@app.route('/trade')
+@app.route('/trade', methods=['POST', 'GET'])
 def trade():
-    if "user" in session:
+    if request.method == "POST":
         user = session["user"]
-        return render_template('trade.html', user=user)
-    else:
-        return redirect(url_for("login"))
+        adresa = engine_address
+        adresa += '/tenth'
+        r = requests.post(adresa, data=user.encode("utf-8"))
+        found_user = r.content.decode("utf-8")
+        found_user = from_string(found_user)
 
-@app.route('/transactions')
-def transactions():
-    if "user" in session:
-        user = session["user"]
-        return render_template('transactions.html', user=user)
+        try:
+            _tradeEmail = request.form["tradeEmail"]
+            _tradeAmount = request.form["tradeAmount"]
+
+            if _tradeEmail and _tradeAmount:
+                adresa = engine_address
+                adresa += '/tenth'
+                r = requests.post(adresa, data=_tradeEmail.encode("utf-8"))
+                _found_user_receiver = r.content.decode("utf-8")
+                _found_user_receiver = from_string(_found_user_receiver)
+                #_found_user_receiver = users.query.filter_by(email=_tradeEmail).first()
+                if (_found_user_receiver == None or _found_user_receiver.verified == False):
+                    error = "Transaction failed."
+                    adresa = engine_address
+                    adresa += '/thirteenth'
+                    tr = transaction(found_user.email, _tradeEmail, int(_tradeAmount), "Odbijeno")
+                    msg = transaction_to_string(tr)
+                    r = requests.post(adresa, data=msg.encode("utf-8"))
+                    return render_template('trade.html', error=error)
+
+                if (found_user.amount - int(_tradeAmount) < 0):
+                    error = "Transaction failed. Not enough money."
+                    tr = transaction(found_user.email, _tradeEmail, int(_tradeAmount), "Odbijeno")
+                    msg = transaction_to_string(tr)
+                    adresa = engine_address
+                    adresa += '/thirteenth'
+                    r = requests.post(adresa, data=msg.encode("utf-8"))
+                    return render_template('trade.html', error=error)
+
+                tr = transaction(found_user.email, _tradeEmail, int(_tradeAmount), "U obradi")
+                adresa = engine_address
+                adresa += '/fourteenth'
+                msg = transaction_to_string(tr) + "," + found_user.email + "|" + _tradeEmail
+                r = requests.post(adresa, data=msg.encode("utf-8"))
+                time.sleep(5)
+                found_user = r.content.decode("utf-8")
+                found_user = from_string(found_user)
+                return redirect(url_for("userHome"))
+
+            else:
+                error = "Every field must be filed."
+                return render_template('trade.html', error=error)
+        except Exception as e:
+            return "Error"
     else:
-        return redirect(url_for("login"))
+        if "user" in session:
+            user = session["user"]
+            adresa = engine_address
+            adresa += '/tenth'
+            r = requests.post(adresa, data=user.encode("utf-8"))
+            found_user = r.content.decode("utf-8")
+            found_user = from_string(found_user)
+            if (found_user.verified == True):
+                return render_template('transaction.html')
+            else:
+                return render_template('statusError.html')
+        else:
+            return redirect(url_for("login"))
+
+@app.route('/transactions', methods=['POST', 'GET'])
+def transactions():
+    if request.method == "POST":
+        return "Post"
+    else:
+        if "user" in session:
+            user = session["user"]
+            adresa = engine_address
+            adresa += '/tenth'
+            r = requests.post(adresa,data = user.encode("utf-8"))
+            found_user = r.content.decode("utf-8")
+            found_user = from_string(found_user)
+            if (found_user.verified == True):
+                return render_template('transactions.html')
+            else:
+                return render_template('statusError.html')
+        else:
+            return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run(port=5000,debug=True)
