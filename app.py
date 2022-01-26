@@ -409,5 +409,22 @@ def convert():
             return render_template('convert.html')
         else:
             return redirect(url_for("login"))
+@app.route('/wallet', methods=['POST','GET'])
+def wallet():
+    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
+    parameters = {
+        'slug':"bitcoin,cardano,ethereum,solana,dogecoin,polkadot,xrp,terra,avalanche,polygon,litecoin,chainlink",
+        'convert':'USD'
+    }
+    headers = {
+        'Accepts':'application/json',
+        'X-CMC_PRO_API_KEY':'d2b0d00d-f06b-43cb-b9d2-c132cbc7763e'
+    }
+    session = Session()
+    session.headers.update(headers)
+
+    response = session.get(url,params=parameters)
+    return render_template("wallet.html",response=json.loads(response.text)['data'])
+    
 if __name__ == "__main__":
     app.run(port=5000,debug=True)

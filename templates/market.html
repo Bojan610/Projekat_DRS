@@ -7,10 +7,12 @@
     <p><strong>Error:</strong> {{ error }}
   {% endif %}
   <html lang="en">
-    <head align="center">
-      Current market Values of Cryptocurrencies
+    <head>
     </head>
     <body>
+      <div align="center">
+        Current market Values of Cryptocurrencies
+      </div>
       <div class="table-responsive mt-3">
         <table class="table table-dark table-borderless" align="center" style="width:fit-content">
           {% for nekiKey in response %}
