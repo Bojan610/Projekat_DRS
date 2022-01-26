@@ -305,28 +305,36 @@ def filter_sort():
 
     tmplista = lista_transakcija
     #FILTRIRANJE
-    if(filtertext != ''):
-        if(filtriranje == 0):   # SENDER
-            for i in lista_transakcija:
-                if filtertext not in i.tSender:
-                    tmplista.remove(i)
-        elif filtriranje == 1:  # RECEIVER
-            for i in lista_transakcija:
-                if filtertext not in i.tReceiver:
-                    tmplista.remove(i)
-        elif filtriranje == 2:  # STATE
-            for i in lista_transakcija:
-                if filtertext not in i.tState:
-                    tmplista.remove(i)
-        elif filtriranje == 3:  # AMOUNT
-            for i in lista_transakcija:
-                if filtertext not in i.tAmount:
-                    tmplista.remove(i)
-        else:  # HASH
-            for i in lista_transakcija:
-                if filtertext not in i.tHash:
-                    tmplista.remove(i)
-        lista_transakcija = tmplista
+    el = len(lista_transakcija)
+    for i in range(el):
+        tmplista = lista_transakcija
+        if(filtertext != ''):
+            if(filtriranje == 0):   # SENDER
+                for i in lista_transakcija:
+                    if filtertext not in i.tSender:
+                        tmplista.remove(i)
+                        break
+            elif filtriranje == 1:  # RECEIVER
+                for i in lista_transakcija:
+                    if filtertext not in i.tReceiver:
+                        tmplista.remove(i)
+                        break
+            elif filtriranje == 2:  # STATE
+                for i in lista_transakcija:
+                    if filtertext not in i.tState:
+                        tmplista.remove(i)
+                        break
+            elif filtriranje == 3:  # AMOUNT
+                for i in lista_transakcija:
+                    if filtertext not in str(i.tAmount):
+                        tmplista.remove(i)
+                        break
+            else:  # HASH
+                for i in lista_transakcija:
+                    if filtertext not in i.tHash:
+                        tmplista.remove(i)
+                        break
+            lista_transakcija = tmplista
     #SORTIRANJE
     if sortiranje == 0:#SENDER
         if uzlazno == 0:
