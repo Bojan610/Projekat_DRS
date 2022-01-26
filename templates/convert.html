@@ -1,0 +1,19 @@
+{% extends "baseUser.html" %}
+{% block title %}Python Flask WEB App{% endblock %}
+{% block content %}
+
+<form action="#" method="post">
+  <div class="form-group">
+    <label >Enter the crypto you witch to convert to:</label>
+    <input type="string" class="form-control" name="crypto" id="crypto" placeholder="Enter crypto name">
+      <label>Enter the amount of the currency you want:</label>
+      <input type = "number" class="form-control" name="amount" id="amount" placeholder="Enter amount from 1 to 10000">
+  </div>
+  <button type="submit" class="btn btn-primary">Convert</button>
+</form>
+
+{% if error %}
+<p><strong>Error:</strong> {{ error }}
+{% endif %}
+
+{% endblock %}

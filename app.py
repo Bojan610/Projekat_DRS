@@ -5,7 +5,6 @@ from Model.transaction import transaction, transaction_to_string
 from Model.users import from_string
 from Model.creditCard import card_from_string
 from config import engine_address
-from bs4 import BeautifulSoup
 from requests import Session
 import json
 
@@ -226,18 +225,6 @@ def market():
     return render_template("market.html",response=json.loads(response.text)['data'])
 
 
-# Funkcija koja koja nalazi cenu valute
-def get_crypto_price(coin):
-
-    url = "https://www.google.com/search?q=" + coin + "+price"
-
-    HTML = requests.get(url)
-
-    soup = BeautifulSoup(HTML.text, 'html.parser')
-
-    text = soup.find("div", attrs={'class': 'BNeawe iBp4i AP7Wnd'}).find("div",attrs={'class': 'BNeawe iBp4i AP7Wnd'}).text
-    return text
-
 @app.route('/deposit', methods=['POST', 'GET'])
 def deposit():
     if request.method == "POST":
@@ -384,5 +371,43 @@ def transactions():
         else:
             return redirect(url_for("login"))
 
+@app.route('/convert', methods=['POST','GET'])
+def convert():
+    if request.method == "POST":
+        user = session["user"]
+        msg = user
+        adresa = engine_address
+        adresa += '/tenth'
+        r = requests.post(adresa, data=msg.encode("utf-8"))
+        msg = r.content.decode("utf-8")
+        found_user = from_string(msg)
+        if (found_user.verified == True):
+            try:
+                _crypto = request.form["crypto"]
+                _amount = request.form["amount"]
+                if _crypto and _amount:
+                    msg = user + "|" + _crypto + "|" + _amount
+                    adresa = engine_address
+                    adresa += '/fifteenth'
+                    r = requests.post(adresa, data=msg.encode("utf-8"))
+                    msg = r.content.decode("utf-8")
+                    if (msg == "success"):
+                        return redirect(url_for("userHome"))
+                    else:
+                        error = "Convert failed. Not enough money on card."
+                        return render_template('convert.html', error=error)
+                else:
+                    error = "Every field must be filed."
+                    return render_template('convert.html', error=error)
+            except Exception as e:
+                return "Error"
+        else:
+            error = "User is not verified!"
+            return render_template('convert.html', error=error)
+    else:
+        if "user" in session:
+            return render_template('convert.html')
+        else:
+            return redirect(url_for("login"))
 if __name__ == "__main__":
     app.run(port=5000,debug=True)

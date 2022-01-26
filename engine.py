@@ -1,11 +1,13 @@
 import threading
 import time
+import requests
 import threading as thread
 from flask import request
 from Model.transaction import transaction_from_string
 from config import specified_port, db, engine
 from Model.users import users, to_string
 from Model.creditCard import creditCard, card_to_string
+from bs4 import BeautifulSoup
 
 @engine.route('/first', methods=['POST'])
 def first_function():
@@ -182,6 +184,39 @@ def fourteenth_function():
     x = threading.Thread(target=sleep_thread, args=(first, second, trans))
     x.start()
     return "success"
+
+@engine.route('/fifteenth',methods=['POST'])
+def fifteenth_function():
+    poruka = request.get_data().decode("utf-8")
+    p = poruka.split(",")
+    p1 = p.split("|")
+    first = p1[0]
+    crypto = p1[1]
+    kolicina = int(p1[2])
+
+    found_user = users.query.filter_by(email=first).first()
+    found_cd = creditCard.query.filter_by(cdNumber=found_user.cdNumber).first()
+    cena = get_crypto_price(crypto)
+    if(found_cd.cardAmount >= kolicina * cena ):
+        found_cd.cardAmount = found_cd.cardAmount - (kolicina * cena)
+        found_user.amount = found_user.amount - (kolicina*cena)
+        db.session.commit()
+        return "success"
+    else:
+        return "failure"
+
+# Funkcija koja koja nalazi cenu valute
+def get_crypto_price(coin):
+
+    url = "https://www.google.com/search?q=" + coin + "+price"
+
+    HTML = requests.get(url)
+
+    soup = BeautifulSoup(HTML.text, 'html.parser')
+
+    text = soup.find("div", attrs={'class': 'BNeawe iBp4i AP7Wnd'}).find("div",attrs={'class': 'BNeawe iBp4i AP7Wnd'}).text
+    price = int(text)
+    return price
 
 if __name__ == "__main__":
     engine.run(port=specified_port,debug=True)
