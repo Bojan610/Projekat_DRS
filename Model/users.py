@@ -13,6 +13,7 @@ class users(db.Model):
     amount = db.Column(db.Integer)
     verified = db.Column(db.Boolean)
     cdNumber = db.Column(db.String(100))
+    walletId = db.Column(db.String(100))
 
     def __init__(self, firstName, lasttName, email, password, address, city, country, tel):
         self.firstName = firstName
@@ -26,14 +27,16 @@ class users(db.Model):
         self.amount = 0
         self.verified = False
         self.cdNumber = "0"
+        self.walletId = "0"
 
         def __repr__(self):
             return '<User %r>' % self.fname
 
-    def fill_class(self, amount, verified, cdNumber):
+    def fill_class(self, amount, verified, cdNumber, walletId):
         self.amount = amount
         self.verified = verified
         self.cdNumber = cdNumber
+        self.walletId = walletId
 
 
 def from_string(tekst: str):
@@ -41,9 +44,11 @@ def from_string(tekst: str):
     ans: users = users(tekst[0], tekst[1], tekst[2], tekst[3], tekst[4], tekst[5], tekst[6], tekst[7])
     if tekst[9] == "False":
         is_verified = False
+        walletId = "0"
     else:
         is_verified = True
-    ans.fill_class(int(tekst[8]), is_verified , tekst[10])
+        walletId = tekst[2]
+    ans.fill_class(int(tekst[8]), is_verified , tekst[10], walletId)
     return ans
 
 

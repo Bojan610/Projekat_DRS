@@ -7,7 +7,10 @@ from Model.transaction import transaction_from_string, lista_u_string, transacti
 from config import specified_port, db, engine
 from Model.users import users, to_string
 from Model.creditCard import creditCard, card_to_string
+from Model.wallet import wallet, wallet_to_string
 from bs4 import BeautifulSoup
+from requests import Session
+import json
 
 @engine.route('/first', methods=['POST'])
 def first_function():
@@ -105,7 +108,11 @@ def eighth_function():
     found_cd = creditCard.query.filter_by(cdNumber=_cdNumber).first()
     found_user.verified = True
     found_user.cdNumber = _cdNumber
+    found_user.walletId = found_user.email
     found_cd.cardAmount = found_cd.cardAmount - 1
+    db.session.commit()
+    w = wallet(user, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    db.session.add(w)
     db.session.commit()
     return "Success"
 
@@ -193,9 +200,35 @@ def fifteenth_function():
     kolicina = float(p1[2])
 
     found_user = users.query.filter_by(email=first).first()
+    found_wallet = wallet.query.filter_by(id=first).first()
     cena = get_crypto_price(crypto)
     if(float(found_user.amount) >= kolicina * cena ):
-        found_user.amount = found_user.amount - (kolicina*cena)
+        found_user.amount = found_user.amount - int(kolicina*cena)
+        if (crypto.lower() == "bitcoin"):
+            found_wallet.currency1 = found_wallet.currency1 + kolicina
+        elif (crypto.lower() == "cardano"):
+            found_wallet.currency2 = found_wallet.currency2 + kolicina
+        elif (crypto.lower() == "ethereum"):
+            found_wallet.currency3 = found_wallet.currency3 + kolicina
+        elif (crypto.lower() == "solana"):
+            found_wallet.currency4 = found_wallet.currency4 + kolicina
+        elif (crypto.lower() == "dogecoin"):
+            found_wallet.currency5 = found_wallet.currency5 + kolicina
+        elif (crypto.lower() == "polkadot"):
+            found_wallet.currency6 = found_wallet.currency6 + kolicina
+        elif (crypto.lower() == "xrp"):
+            found_wallet.currency7 = found_wallet.currency7 + kolicina
+        elif (crypto.lower() == "terra"):
+            found_wallet.currency8 = found_wallet.currency8 + kolicina
+        elif (crypto.lower() == "avalanche"):
+            found_wallet.currency9 = found_wallet.currency9 + kolicina
+        elif (crypto.lower() == "polygon"):
+            found_wallet.currency10 = found_wallet.currency10 + kolicina
+        elif (crypto.lower() == "litecoin"):
+            found_wallet.currency11 = found_wallet.currency11 + kolicina
+        elif (crypto.lower() == "chainlink"):
+            found_wallet.currency12 = found_wallet.currency12 + kolicina
+
         db.session.commit()
         return "success"
     else:
@@ -213,26 +246,36 @@ def sixteenth_function():
     else:
         return "failure"
 
+@engine.route('/seventeenth',methods=['POST'])
+def seventeenth_function():
+    user = request.get_data().decode("utf-8")
+    valute = wallet.query.filter_by(id=user).first()
+    if valute != None:
+        return wallet_to_string(valute)
+    else:
+        return "failure"
+
 # Funkcija koja koja nalazi cenu valute
+
 def get_crypto_price(coin):
-        # Get the URL
-        url = "https://www.google.com/search?q=" + coin + "+price"
+    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
+    parameters = {
+        'slug':"bitcoin,cardano,ethereum,solana,dogecoin,polkadot,xrp,terra,avalanche,polygon,litecoin,chainlink",
+        'convert':'USD'
+    }
+    headers = {
+        'Accepts':'application/json',
+        'X-CMC_PRO_API_KEY':'d2b0d00d-f06b-43cb-b9d2-c132cbc7763e'
+    }
+    session = Session()
+    session.headers.update(headers)
 
-        # Make a request to the website
-        HTML = requests.get(url)
+    response = session.get(url,params=parameters)
+    response= json.loads(response.text)['data']
 
-        # Parse the HTML
-        soup = BeautifulSoup(HTML.text, 'html.parser')
-
-        # Find the current price
-        # text = soup.find("div", attrs={'class':'BNeawe iBp4i AP7Wnd'}).text
-        text = soup.find("div", attrs={'class': 'BNeawe iBp4i AP7Wnd'}).find("div", attrs={
-            'class': 'BNeawe iBp4i AP7Wnd'}).text
-        # Return the text
-        lista = text.split(" ")
-        token = lista[0]
-        cena = float(token)
-        return float(cena/104)
+    for item in response :
+        if response[item]['name'] == str(coin):
+            return response[item]['quote']['USD']['price']
 
 if __name__ == "__main__":
     engine.run(port=specified_port,debug=True)

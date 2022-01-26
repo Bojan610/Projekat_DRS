@@ -2,8 +2,6 @@
 {% block title %}Python Flask WEB App{% endblock %}
 {% block content %}
 
-
-
 {% if error %}
 <p><strong>Error:</strong> {{ error }}
 {% endif %}
@@ -23,23 +21,103 @@
                         <td>
                             Amount Owned
                         </td>
-                        <td>
-                            Amount Owned($)
-                        </td>
                     </tr>
-                {% for nekiKey in response %}
                     <tr>
                         <td>
-                            {{response[nekiKey]['name']}}
+                            Bitcoin
                         </td>
                         <td>
-                            
-                        </td>
-                        <td>
-                            {{response[nekiKey]['quote']['USD']['price']}} $
+                            {{valute.currency1}}
                         </td>
                     </tr>
-                {% endfor %}
+                    <tr>
+                        <td>
+                            Cardano
+                        </td>
+                        <td>
+                            {{valute.currency2}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Ethereum
+                        </td>
+                        <td>
+                            {{valute.currency3}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Solana
+                        </td>
+                        <td>
+                            {{valute.currency4}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Dogecoin
+                        </td>
+                        <td>
+                            {{valute.currency5}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Polkadot
+                        </td>
+                        <td>
+                            {{valute.currency6}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Xrp
+                        </td>
+                        <td>
+                            {{valute.currency7}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Terra
+                        </td>
+                        <td>
+                            {{valute.currency8}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Avalanche
+                        </td>
+                        <td>
+                            {{valute.currency9}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Polygon
+                        </td>
+                        <td>
+                            {{valute.currency10}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Litecoin
+                        </td>
+                        <td>
+                            {{valute.currency11}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Chainlink
+                        </td>
+                        <td>
+                            {{valute.currency12}}
+                        </td>
+                    </tr>
                 </table>
             </div>
         </body>

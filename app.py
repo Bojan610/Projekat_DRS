@@ -4,6 +4,7 @@ import time
 from Model.transaction import transaction, transaction_to_string, lista_iz_stringa
 from Model.users import from_string
 from Model.creditCard import card_from_string
+from Model.wallet import wallet, lista_iz_stringa_wallet, wallet_from_string
 from config import engine_address
 from requests import Session
 import json
@@ -503,22 +504,29 @@ def convert():
             return render_template('convert.html')
         else:
             return redirect(url_for("login"))
-@app.route('/wallet', methods=['POST','GET'])
+@app.route('/wallet', methods=['GET'])
 def wallet():
-    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
-    parameters = {
-        'slug':"bitcoin,cardano,ethereum,solana,dogecoin,polkadot,xrp,terra,avalanche,polygon,litecoin,chainlink",
-        'convert':'USD'
-    }
-    headers = {
-        'Accepts':'application/json',
-        'X-CMC_PRO_API_KEY':'d2b0d00d-f06b-43cb-b9d2-c132cbc7763e'
-    }
-    session = Session()
-    session.headers.update(headers)
-
-    response = session.get(url,params=parameters)
-    return render_template("wallet.html",response=json.loads(response.text)['data'])
+    if "user" in session:
+            user = session["user"]
+            adresa = engine_address
+            adresa += '/tenth'
+            r = requests.post(adresa, data=user.encode("utf-8"))
+            found_user = r.content.decode("utf-8")
+            found_user = from_string(found_user)
+            if (found_user.verified == True):
+                adresa = engine_address
+                adresa += '/seventeenth'
+                r = requests.post(adresa,data = user.encode("utf-8"))
+                msg = r.content.decode("utf-8")
+                if (msg == "failure"):
+                    valute = None
+                else:
+                    valute = wallet_from_string(msg)
+                    return render_template('wallet.html', valute=valute)
+            else:
+                return render_template('statusError.html')
+    else:
+        return redirect(url_for("login"))
     
 if __name__ == "__main__":
     app.run(port=5000,debug=True)
