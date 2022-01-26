@@ -328,7 +328,7 @@ def trade():
                     r = requests.post(adresa, data=msg.encode("utf-8"))
                     return render_template('trade.html', error=error)
 
-                if (found_user.amount - int(_tradeAmount) < 0):
+                if (found_user.amount - int(_tradeAmount) < 0 and found_user.amount-(int(_tradeAmount)+int(_tradeAmount)*0.05)):
                     error = "Transaction failed. Not enough money."
                     tr = transaction(found_user.email, _tradeEmail, int(_tradeAmount), "Odbijeno")
                     msg = transaction_to_string(tr)
