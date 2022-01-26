@@ -8,6 +8,7 @@ from config import specified_port, db, engine
 from Model.users import users, to_string
 from Model.creditCard import creditCard, card_to_string
 from bs4 import BeautifulSoup
+import pandas as pd
 
 @engine.route('/first', methods=['POST'])
 def first_function():
@@ -188,17 +189,14 @@ def fourteenth_function():
 @engine.route('/fifteenth',methods=['POST'])
 def fifteenth_function():
     poruka = request.get_data().decode("utf-8")
-    p = poruka.split(",")
-    p1 = p.split("|")
+    p1 = poruka.split("|")
     first = p1[0]
     crypto = p1[1]
-    kolicina = int(p1[2])
+    kolicina = float(p1[2])
 
     found_user = users.query.filter_by(email=first).first()
-    found_cd = creditCard.query.filter_by(cdNumber=found_user.cdNumber).first()
     cena = get_crypto_price(crypto)
-    if(found_cd.cardAmount >= kolicina * cena ):
-        found_cd.cardAmount = found_cd.cardAmount - (kolicina * cena)
+    if(float(found_user.amount) >= kolicina * cena ):
         found_user.amount = found_user.amount - (kolicina*cena)
         db.session.commit()
         return "success"
@@ -207,16 +205,24 @@ def fifteenth_function():
 
 # Funkcija koja koja nalazi cenu valute
 def get_crypto_price(coin):
+        # Get the URL
+        url = "https://www.google.com/search?q=" + coin + "+price"
 
-    url = "https://www.google.com/search?q=" + coin + "+price"
+        # Make a request to the website
+        HTML = requests.get(url)
 
-    HTML = requests.get(url)
+        # Parse the HTML
+        soup = BeautifulSoup(HTML.text, 'html.parser')
 
-    soup = BeautifulSoup(HTML.text, 'html.parser')
-
-    text = soup.find("div", attrs={'class': 'BNeawe iBp4i AP7Wnd'}).find("div",attrs={'class': 'BNeawe iBp4i AP7Wnd'}).text
-    price = int(text)
-    return price
+        # Find the current price
+        # text = soup.find("div", attrs={'class':'BNeawe iBp4i AP7Wnd'}).text
+        text = soup.find("div", attrs={'class': 'BNeawe iBp4i AP7Wnd'}).find("div", attrs={
+            'class': 'BNeawe iBp4i AP7Wnd'}).text
+        # Return the text
+        lista = text.split(" ")
+        token = lista[0]
+        cena = float(token)
+        return float(cena/104)
 
 if __name__ == "__main__":
     engine.run(port=specified_port,debug=True)

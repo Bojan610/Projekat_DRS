@@ -394,7 +394,7 @@ def convert():
                     if (msg == "success"):
                         return redirect(url_for("userHome"))
                     else:
-                        error = "Convert failed. Not enough money on card."
+                        error = "Convert failed. Not enough money."
                         return render_template('convert.html', error=error)
                 else:
                     error = "Every field must be filed."
