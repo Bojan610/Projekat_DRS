@@ -2,6 +2,29 @@
 {% block title %}Python Flask WEB App{% endblock %}
 {% block content %}
 
+<style>
+        .filter{
+        color: white;
+        font-weight: bold;
+        }
+
+        .radio{
+        color: lightgrey;
+        }
+
+        .button{
+        border-color:darkblue;
+        border-radius: 6px;
+        border-thickness:3px;
+        font-family: Calibri;
+        background-color: #007bff;
+        color: white;
+        foreground
+        border: 2px solid black;
+        }
+    </style>
+
+
   <div class="wrapper rounded">
     <nav class="navbar navbar-expand-lg navbar-dark dark d-lg-flex align-items-lg-start">
       <div class="navbar-brand">
@@ -17,26 +40,50 @@
         </a>
     </div>
     <div class="table-responsive mt-3">
-        <table class="table table-dark table-borderless">
+        <table class="table table-dark table-borderless" id="tabela_kursnaLista">
             <thead>
                 <tr>
-                    <th scope="col">Activity</th>
-                    <th scope="col">Date</th>
-                    <th scope="col" class="text-right">Amount</th>
+                    <th scope="col">Sender</th>
+                    <th scope="col">Receiver</th>
+                    <th scope="col"> Hash</th>
+                    <th scope="col"> Status</th>
                 </tr>
             </thead>
             <tbody>
+            {% for i in lista_transakcija %}
                 <tr>
-                    <td scope="row"> <span class="fa fa-briefcase mr-1"></span> USD -> Litecoin </td>
-                    <td class="text-muted">19 Jan 2022, 12:30 PM</td>
-                    <td class="d-flex justify-content-end align-items-center"> <span class="fa fa-long-arrow-up mr-1"></span> $52.9 </td>
+                    <td scope="row"> <span class="fa fa-briefcase mr-1"></span> {{ i.tSender }} </td>
+                    <td class="text-muted">{{ i.tReceiver }}</td>
+                    <td class="text-muted">{{ i.tHash }}</td>
+                    <td class="text-muted">{{ i.tState }}</td>
+                    <td class="d-flex justify-content-end align-items-center"> <span class="fa fa-long-arrow-up mr-1"></span> {{ i.tAmount }} </td>
                 </tr>
+            {% endfor %}
             </tbody>
         </table>
     </div>
-  </div>
-  {% if error %}
-    <p><strong>Error:</strong> {{ error }}
-  {% endif %}
+   <px class="filter">SORTIRAJ:</px><br>
+      <form action="/filter_sort" method="post">
+          <input type="radio" name="uzlazno" id="uzlazno" value="0" checked><px1 class="radio">UZLAZNO&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1>
+          <input type="radio" name="uzlazno" id="silazno" value="1"><px1 class="radio">SILAZNO</px1><br>
+          <input type="radio" name="radio" id="sort_sender" value="0" checked><px1 class="radio">SENDER&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1>
+          <input type="radio" name="radio" id="sort_receiver" value="1"><px1 class="radio">RECEIVER&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1>
+          <input type="radio" name="radio" id="sort_hash" value="4"><px1 class="radio">HASH&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1>
+          <input type="radio" name="radio" id="sort_state" value="2"><px1 class="radio">STATE&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1>
+          <input type="radio" name="radio" id="sort_amount" value="3"><px1 class="radio">AMOUNT</px1>
+          <br><px class="filter">FILTER BY:</px><br>
+          <input type="radio" name="radio_1" value="0" id="radio_sender" checked><px1 class="radio">SENDER&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1></input>
+          <input type="radio" name="radio_1" value="1" id="radio_receiver"><px1 class="radio">RECEIVER&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1></input>
+          <input type="radio" name="radio_1" value="4" id="radio_hash"><px1 class="radio">HASH&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1></input>
+          <input type="radio" name="radio_1" value="2" id="radio_state"><px1 class="radio">STATE&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1></input>
+          <input type="radio" name="radio_1" value="3" id="radio_amount"><px1 class="radio">AMOUNT&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</px1></input>
+          <br><input type="text" name="filtertext"></input>
+          <br><br><button type="submit" class="btn btn-primary">SEARCH</button><br>
+      </form>
+</div>
+     </div>
+    {% if error %}
+        <p><strong>Error:</strong> {{ error }}
+    {% endif %}
 
 {% endblock %}

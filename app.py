@@ -1,7 +1,7 @@
 import requests
 from flask import Flask, render_template, request, redirect, url_for, session
 import time
-from Model.transaction import transaction, transaction_to_string
+from Model.transaction import transaction, transaction_to_string, lista_iz_stringa
 from Model.users import from_string
 from Model.creditCard import card_from_string
 from config import engine_address
@@ -282,6 +282,81 @@ def status():
     else:
         return redirect(url_for("login"))
 
+
+@app.route('/filter_sort', methods=['POST'])
+def filter_sort():
+    user = session["user"]
+    r = request.form.to_dict()
+    uzlazno = int(r["uzlazno"])
+    sortiranje = int(r["radio"])
+    filtriranje = int(r["radio_1"])
+    filtertext = r["filtertext"]
+    # LISTA
+    adresa = engine_address
+    adresa += '/sixteenth'
+    msg = user
+    r = requests.post(adresa, data=msg.encode("utf-8"))
+    msg = r.content
+    msg = msg.decode("utf-8")
+    if (msg == "failure"):
+        lista_transakcija = None
+    else:
+        lista_transakcija = lista_iz_stringa(msg)
+
+    tmplista = lista_transakcija
+    #FILTRIRANJE
+    if(filtertext != ''):
+        if(filtriranje == 0):   # SENDER
+            for i in lista_transakcija:
+                if filtertext not in i.tSender:
+                    tmplista.remove(i)
+        elif filtriranje == 1:  # RECEIVER
+            for i in lista_transakcija:
+                if filtertext not in i.tReceiver:
+                    tmplista.remove(i)
+        elif filtriranje == 2:  # STATE
+            for i in lista_transakcija:
+                if filtertext not in i.tState:
+                    tmplista.remove(i)
+        elif filtriranje == 3:  # AMOUNT
+            for i in lista_transakcija:
+                if filtertext not in i.tAmount:
+                    tmplista.remove(i)
+        else:  # HASH
+            for i in lista_transakcija:
+                if filtertext not in i.tHash:
+                    tmplista.remove(i)
+        lista_transakcija = tmplista
+    #SORTIRANJE
+    if sortiranje == 0:#SENDER
+        if uzlazno == 0:
+            lista_transakcija.sort(key=lambda x: x.tSender)
+        else:
+            lista_transakcija.sort(reverse=True, key=lambda x: x.tSender)
+    elif sortiranje == 1:#RECEIVER
+        if (uzlazno == 0):
+            lista_transakcija.sort(key=lambda x: x.tReceiver)
+        else:
+            lista_transakcija.sort(reverse=True, key=lambda x: x.tReceiver)
+    elif sortiranje == 2:#STATE
+        if uzlazno == 0:
+            lista_transakcija.sort(key=lambda x: x.tState)
+        else:
+            lista_transakcija.sort(reverse=True, key=lambda x: x.tState)
+    elif sortiranje == 4:#HASH
+        if uzlazno == 0:
+            lista_transakcija.sort(key=lambda x: x.tHash)
+        else:
+            lista_transakcija.sort(reverse=True, key=lambda x: x.tHash)
+    else:#AMOUNT
+        if uzlazno == 0:
+            lista_transakcija.sort(key=lambda x: x.tAmount)
+        else:
+            lista_transakcija.sort(reverse=True, key=lambda x: x.tAmount)
+    print(r)
+    return render_template('transactions.html',lista_transakcija=lista_transakcija)
+
+
 @app.route('/trade', methods=['POST', 'GET'])
 def trade():
     if request.method == "POST":
@@ -364,8 +439,19 @@ def transactions():
             r = requests.post(adresa,data = user.encode("utf-8"))
             found_user = r.content.decode("utf-8")
             found_user = from_string(found_user)
+            # LISTA
+            adresa = engine_address
+            adresa += '/sixteenth'
+            msg = user
+            r = requests.post(adresa, data=msg.encode("utf-8"))
+            msg = r.content
+            msg = msg.decode("utf-8")
+            if (msg == "failure"):
+                lista_transakcija = None
+            else:
+                lista_transakcija = lista_iz_stringa(msg)
             if (found_user.verified == True):
-                return render_template('transactions.html')
+                return render_template('transactions.html',lista_transakcija=lista_transakcija)
             else:
                 return render_template('statusError.html')
         else:

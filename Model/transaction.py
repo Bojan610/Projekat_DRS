@@ -41,6 +41,25 @@ def transaction_from_string(msg : str):
     retval.tHash = hash
     return retval
 
+
+def lista_u_string(lista):
+    s = ""
+    length = len(lista)
+    for i in range(length):
+        s += transaction_to_string(lista[i]) + ";"
+    s = s.removesuffix(';')
+    return s
+
+
+def lista_iz_stringa(string):
+    lista_stringova = string.split(";")
+    length = len(lista_stringova)
+    lista_transakcija : list = []
+    for i in range(length):
+        lista_transakcija.insert(i,transaction_from_string(lista_stringova[i]))
+    return lista_transakcija
+
+
 class tSchema(Schema):
     tSender = fields.Str()
     tReceiver = fields.Str()

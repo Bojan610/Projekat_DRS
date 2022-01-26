@@ -3,12 +3,11 @@ import time
 import requests
 import threading as thread
 from flask import request
-from Model.transaction import transaction_from_string
+from Model.transaction import transaction_from_string, lista_u_string, transaction
 from config import specified_port, db, engine
 from Model.users import users, to_string
 from Model.creditCard import creditCard, card_to_string
 from bs4 import BeautifulSoup
-import pandas as pd
 
 @engine.route('/first', methods=['POST'])
 def first_function():
@@ -171,7 +170,6 @@ def sleep_thread(first, second, trans):
 
 @engine.route('/fourteenth',methods=['POST'])
 def fourteenth_function():
-
     poruka = request.get_data().decode("utf-8")
     p = poruka.split(",")
     p1 = p[1].split("|")
@@ -200,6 +198,18 @@ def fifteenth_function():
         found_user.amount = found_user.amount - (kolicina*cena)
         db.session.commit()
         return "success"
+    else:
+        return "failure"
+
+
+@engine.route('/sixteenth',methods=['POST'])
+def sixteenth_function():
+    poruka = request.get_data().decode("utf-8")
+    salje = transaction.query.filter_by(tSender=poruka).all()
+    prima = transaction.query.filter_by(tReceiver=poruka).all()
+    lista_transakcija = salje + prima
+    if lista_transakcija != None:
+        return lista_u_string(lista_transakcija)
     else:
         return "failure"
 
